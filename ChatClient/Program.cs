@@ -29,8 +29,21 @@ namespace ChatClient
                 }
 
                 Console.WriteLine("Connect success");
+
+                #region SendMessageTest
+                int counter = 0;
+                while (counter < 5)
+                {
+                    counter++;
+                    string msg = $"Now Counter is: {counter}";
+                    Send(client, msg);
+                    Console.WriteLine($"Message sent [ {msg} ]");
+                    System.Threading.Thread.Sleep(1000);
+                }
+                #endregion
+
             }
-            catch(ArgumentNullException e)
+            catch (ArgumentNullException e)
             {
                 Console.WriteLine($"ArgumentNullException: {e}");
             }
@@ -42,7 +55,15 @@ namespace ChatClient
             {
                 client.Close();
                 Console.WriteLine("Disconnected");
+                Console.ReadLine();
             }
+        }
+
+        private static void Send(TcpClient client, string message)
+        {
+            var requestBuffer = System.Text.Encoding.ASCII.GetBytes(message);
+
+            client.GetStream().Write(requestBuffer,0,requestBuffer.Length);
         }
     }
 }
