@@ -31,15 +31,23 @@ namespace ChatClient
                 Console.WriteLine("Connect success");
 
                 #region SendMessageTest
-                int counter = 0;
-                while (counter < 5)
+                //int counter = 0;
+                //while (counter < 5)
+                //{
+                //    counter++;
+                //    string msg = $"Now Counter is: {counter}";
+                //    Send(client, msg);
+                //    Console.WriteLine($"Message sent [ {msg} ]");
+                //    System.Threading.Thread.Sleep(1000);
+                //}
+
+                while (true)
                 {
-                    counter++;
-                    string msg = $"Now Counter is: {counter}";
-                    Send(client, msg);
-                    Console.WriteLine($"Message sent [ {msg} ]");
-                    System.Threading.Thread.Sleep(1000);
+                    string message = Console.ReadLine();
+                    Console.WriteLine(message);
+                    Send(client, message);
                 }
+
                 #endregion
 
             }
