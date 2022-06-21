@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using ChatCore;
 
 namespace ChatClient
 {
@@ -15,63 +16,39 @@ namespace ChatClient
             const int port = 4099;
 
             Console.WriteLine("============");
-            var client = new TcpClient();
+            var client = new ChatCore.ChatClient();
 
-            try
+            Console.WriteLine("<Please enter your name...>");
+            var name = Console.ReadLine();
+
+            bool succeed = client.Connect(hostIP, port);
+
+            if (!succeed)
             {
-                Console.WriteLine($"Connect to server {hostIP}:{port}");
-                client.Connect(hostIP, port);
+                Console.WriteLine("Connect faile");
+                return;
+            }
 
-                if (!client.Connected)
+            client.SetName(name);
+            Console.WriteLine("Connect success");
+
+            Console.WriteLine("Plaese erter message...");
+
+            while (true)
+            {
+                string message = Console.ReadLine();
+
+                if (message == "exit")
                 {
-                    Console.WriteLine("Connect faile");
-                    return;
+                    Console.WriteLine("<Bye...>");
+                    client.Disconnect();
+                    break;
                 }
 
-                Console.WriteLine("Connect success");
-
-                #region SendMessageTest
-                //int counter = 0;
-                //while (counter < 5)
-                //{
-                //    counter++;
-                //    string msg = $"Now Counter is: {counter}";
-                //    Send(client, msg);
-                //    Console.WriteLine($"Message sent [ {msg} ]");
-                //    System.Threading.Thread.Sleep(1000);
-                //}
-
-                while (true)
-                {
-                    string message = Console.ReadLine();
-                    Console.WriteLine(message);
-                    Send(client, message);
-                }
-
-                #endregion
+                client.SendMessage(message);
+                Console.WriteLine($"<Message sent>");
 
             }
-            catch (ArgumentNullException e)
-            {
-                Console.WriteLine($"ArgumentNullException: {e}");
-            }
-            catch(SocketException e)
-            {
-                Console.WriteLine($"SocketException: {e}");
-            }
-            finally
-            {
-                client.Close();
-                Console.WriteLine("Disconnected");
-                Console.ReadLine();
-            }
-        }
-
-        private static void Send(TcpClient client, string message)
-        {
-            var requestBuffer = System.Text.Encoding.ASCII.GetBytes(message);
-
-            client.GetStream().Write(requestBuffer,0,requestBuffer.Length);
         }
     }
 }
