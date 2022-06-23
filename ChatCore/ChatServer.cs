@@ -11,7 +11,7 @@ namespace ChatCore
         private int port;
         private TcpListener listener;
         private Thread handlerThread;
-        private readonly Dictionary<string, TcpClient> clients = new Dictionary<string, TcpClient>();
+        private readonly Dictionary<string, UdpClient> clients = new Dictionary<string, UdpClient>();
         private readonly Dictionary<string, string> userNames = new Dictionary<string, string>();
 
         public ChatServer()
@@ -30,6 +30,7 @@ namespace ChatCore
             handlerThread = new Thread(ClientsHandler);
             handlerThread.Start();
             
+            /*
             while (true)
             {
                 Console.WriteLine("Waiting for client......");
@@ -44,6 +45,7 @@ namespace ChatCore
                     userNames.Add(clientID, "Unknown");
                 }
             }
+            */
         }
 
         public void ClientsHandler()
@@ -60,7 +62,7 @@ namespace ChatCore
 
                         try
                         {
-                            if (!c.Connected) disconnectedClients.Add(id);
+                            //if (!c.Connected) disconnectedClients.Add(id);
                             if (c.Available > 0) RecieveMessage(id);
                         }
                         catch (Exception e)
@@ -80,11 +82,11 @@ namespace ChatCore
         private void RecieveMessage(string clientID)
         {
             var c = clients[clientID];
-            var stream = c.GetStream();
+            //var stream = c.GetStream();
 
             var numbytes = c.Available;
             var buffer = new byte[numbytes];
-            var bytesRead = stream.Read(buffer, 0, numbytes);
+            //var bytesRead = stream.Read(buffer, 0, numbytes);
             var request = System.Text.Encoding.ASCII.GetString(buffer).Substring(0, bytesRead);
 
             if (request.StartsWith("LOGIN:", StringComparison.OrdinalIgnoreCase))
@@ -100,7 +102,7 @@ namespace ChatCore
                 string[] tokens = request.Split(':');
                 string message = tokens[1];
                 Console.WriteLine($"{userNames[clientID]} says:[ {message} ]");
-                Boardcast(clientID, message);
+                //Boardcast(clientID, message);
                 return;
             }
         }
@@ -116,7 +118,8 @@ namespace ChatCore
                 {
                     try
                     {
-                        clients[clientID].GetStream().Write(buffer, 0, buffer.Length);
+                    
+                            //.Write(buffer, 0, buffer.Length);
                     }
                     catch(Exception e)
                     {

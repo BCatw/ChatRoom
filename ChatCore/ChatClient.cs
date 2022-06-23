@@ -7,9 +7,11 @@ namespace ChatCore
 {
     public class ChatClient
     {
-        private TcpClient client;
+        //private TcpClient client;
+        private UdpClient client;
         List<KeyValuePair<string, string>> messageList;
-
+        
+        
         public ChatClient()
         {
             messageList = new List<KeyValuePair<string, string>>();
@@ -17,15 +19,15 @@ namespace ChatCore
 
         public bool Connect(string address, int port)
         {
-            client = new TcpClient();
-
+            client = new UdpClient(port);
+            
             try
             {
                 Console.WriteLine($"Connexting to chat server {address}:{port}");
                 client.Connect(address, port);
 
                 Console.WriteLine("Connected to chat server");
-                return client.Connected;
+                return true;
             }
             catch (ArgumentNullException e)
             {
@@ -53,15 +55,16 @@ namespace ChatCore
             }
         }
 
-        void HandleRecieveMessage(TcpClient c)
+        void HandleRecieveMessage(UdpClient c)
         {
-            var stream = c.GetStream();
+            //var stream = c.GetStream();
 
             var numbytes = c.Available;
             var buffer = new byte[numbytes];
-            var bytesRead = stream.Read(buffer, 0, numbytes);
-            var request = System.Text.Encoding.ASCII.GetString(buffer).Substring(0, bytesRead);
+            //var bytesRead = stream.Read(buffer, 0, numbytes);
+            //var request = System.Text.Encoding.ASCII.GetString(buffer).Substring(0, bytesRead);
 
+            /*
             if (request.StartsWith("MESSAGE:", StringComparison.OrdinalIgnoreCase))
             {
                 var tokens = request.Split(':');
@@ -69,6 +72,7 @@ namespace ChatCore
                 var message = tokens[2];
                 messageList.Add(new KeyValuePair<string, string>(sender, message));
             }
+            */
         }
 
         public void SetName(string message)
@@ -87,7 +91,8 @@ namespace ChatCore
         {
             var requestBuffer = System.Text.Encoding.ASCII.GetBytes(message);
 
-            client.GetStream().Write(requestBuffer, 0, requestBuffer.Length);
+            //client.GetStream().Write(requestBuffer, 0, requestBuffer.Length);
+            client.Send(requestBuffer, requestBuffer.Length);
         }
     }
 }
