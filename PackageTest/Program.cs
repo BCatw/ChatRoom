@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.IO;
 
 namespace PackageTest
 {
@@ -70,52 +69,36 @@ namespace PackageTest
         static string Read(byte[] byteData)
         {
             string reuslt = "";
-
             int readPosit = 0;
+            
+            reuslt += ReadFloatFrom(byteData, readPosit) + ", ";
+            readPosit += 8; 
 
-            byte[] floatPart = TakeByteArrayPart(byteData, readPosit, 8);
-            readPosit += floatPart.Length;
+            reuslt += ReadIntFrom(byteData, readPosit) + ", ";
+            readPosit += 4;
 
-            byte[] intPart = TakeByteArrayPart(byteData, readPosit, 4);
-            readPosit += intPart.Length;
-
-            byte[] stringPart = TakeByteArrayPart(byteData, readPosit, (int)(posit - readPosit));
-
-            reuslt += ReadFloat(floatPart) + ", ";
-            reuslt += ReadInt(intPart) + ", ";
-            reuslt += ReadString(stringPart);
+            int stringLength = (int)(posit - readPosit);
+            reuslt += ReadStringFrom(byteData, readPosit,stringLength);
 
             return reuslt;
         }
 
-        static float ReadFloat(byte[] data)
+        static float ReadFloatFrom(byte[] data, int startIndex)
         {
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(data);
-            }
-
-            return (float)BitConverter.ToDouble(data, 0);
+            byte[] readPart = TakeByteArrayPart(data, startIndex, 8);
+            return (float)BitConverter.ToDouble(readPart, 0);
         }
 
-        static string ReadString(byte[] data)
+        static string ReadStringFrom(byte[] data, int startIndex, int length)
         {
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(data);
-            }
-
-            return Encoding.ASCII.GetString(data);
+            byte[] readPart = TakeByteArrayPart(data, startIndex, length);
+            return Encoding.ASCII.GetString(readPart);
         }
 
-        static int ReadInt(byte[] data)
+        static int ReadIntFrom(byte[] data, int startIndex)
         {
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(data);
-            }
-
-            return BitConverter.ToInt32(data,0);
+            byte[] readPart = TakeByteArrayPart(data, startIndex, 4);
+            return BitConverter.ToInt32(readPart, 0);
         }
 
         static byte[] TakeByteArrayPart(byte[] origin, int startIndex, int length)
@@ -125,6 +108,12 @@ namespace PackageTest
             {
                 bytes[i] = origin[startIndex + i];
             }
+
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(bytes);
+            }
+
             return bytes;
         }
     }
