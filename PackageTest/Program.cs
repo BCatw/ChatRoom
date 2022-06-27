@@ -7,17 +7,20 @@ namespace PackageTest
     {
         private static byte[] package;
         private static uint posit;
-
+        private static int doubleSize = 8;
+        private static int intSize = 4;
 
         static void Main(string[] args)
         {
             package = new byte[1024];
             posit = 0;
 
+            Write((int)posit);
             Write(123.4f);
             Write(321);
             Write("HeyYouMr.Q");
-
+            CoverPackageContentFrom(BitConverter.GetBytes((int)posit-intSize), 0);
+            
             Console.WriteLine($"Output Byte array (length = {posit}): ");
             for(int i = 0; i < posit; i++)
             {
@@ -45,7 +48,7 @@ namespace PackageTest
 
         static bool Write(string value)
         {
-            byte[] bytesData = System.Text.Encoding.ASCII.GetBytes(value);
+            byte[] bytesData = Encoding.ASCII.GetBytes(value);
             if(Write(bytesData.Length) == false)
             {
                 return false;
@@ -66,16 +69,32 @@ namespace PackageTest
             posit += (uint)byteData.Length;
         }
 
+        static void CoverPackageContentFrom(byte[] newData, int startIndex)
+        {
+            if (BitConverter.IsLittleEndian)
+            {
+                Array.Reverse(newData);
+            }
+
+            for (int i = 0; i < newData.Length; i++)
+            {
+                package[startIndex + i] = newData[i];
+            }
+        }
+
         static string Read(byte[] byteData)
         {
             string reuslt = "";
             int readPosit = 0;
-            
+
+            reuslt += "\nSize: " + ReadIntFrom(byteData, readPosit) + " (not include size data) \n";
+            readPosit += intSize;
+
             reuslt += ReadFloatFrom(byteData, readPosit) + ", ";
-            readPosit += 8; 
+            readPosit += doubleSize; 
 
             reuslt += ReadIntFrom(byteData, readPosit) + ", ";
-            readPosit += 4;
+            readPosit += intSize;
 
             int stringLength = (int)(posit - readPosit);
             reuslt += ReadStringFrom(byteData, readPosit,stringLength);
@@ -85,7 +104,7 @@ namespace PackageTest
 
         static float ReadFloatFrom(byte[] data, int startIndex)
         {
-            byte[] readPart = TakeByteArrayPart(data, startIndex, 8);
+            byte[] readPart = TakeByteArrayPart(data, startIndex, doubleSize);
             return (float)BitConverter.ToDouble(readPart, 0);
         }
 
@@ -97,7 +116,7 @@ namespace PackageTest
 
         static int ReadIntFrom(byte[] data, int startIndex)
         {
-            byte[] readPart = TakeByteArrayPart(data, startIndex, 4);
+            byte[] readPart = TakeByteArrayPart(data, startIndex, intSize);
             return BitConverter.ToInt32(readPart, 0);
         }
 
